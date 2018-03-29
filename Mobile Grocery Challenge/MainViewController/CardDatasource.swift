@@ -138,10 +138,7 @@ extension CardDataSource: CardViewControllerDelegate {
         delegate?.dataSource(self, answeredCard: card, withAnswer: answer)
         usedCards.append(card)
         
-        guard let idx = items.index(of: card) else {
-            return
-        }
-        let indexPath = IndexPath(item: idx, section: 0)
+        let indexPath = IndexPath(item: 0, section: 0)
         notifyItemsRemovedAtIndexPaths([indexPath])
     }
 }

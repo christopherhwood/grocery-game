@@ -37,4 +37,14 @@ class CardCollectionViewCell: UICollectionViewCell {
         hostedView?.removeFromSuperview()
         hostedView = nil
     }
+    
+    override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {
+        super.apply(layoutAttributes)
+//        layer.zPosition = CGFloat(layoutAttributes.zIndex)
+//        contentView.layer.zPosition = CGFloat(layoutAttributes.zIndex)
+        
+        if let cardAttributes = layoutAttributes as? CardCollectionViewLayoutAttributes {
+            hostedView?.backgroundColor = cardAttributes.backgroundColor
+        }
+    }
 }

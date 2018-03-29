@@ -19,7 +19,7 @@ class CardJSONReader {
         
         do {
             let jsonData = try Data(contentsOf: path, options: .mappedIfSafe)
-            guard let jsonDict = JSON(data: jsonData).dictionary else {
+            guard let jsonDict = try JSON(data: jsonData).dictionary else {
                 failHandler(CWError.api.jsonParsingFailed)
                 return
             }

@@ -19,6 +19,10 @@ class CardCollectionViewLayout: UICollectionViewLayout {
         super.init(coder: aDecoder)
     }
     
+    override class var layoutAttributesClass: AnyClass {
+        return CardCollectionViewLayoutAttributes.self
+    }
+    
     override var collectionViewContentSize: CGSize {
         get {
             return collectionView?.bounds.size ?? .zero
@@ -26,40 +30,56 @@ class CardCollectionViewLayout: UICollectionViewLayout {
     }
     
     override func prepare() {
-        
+
+        for i in 0...visibleCardCount
+        {
+            let attributes = CardCollectionViewLayoutAttributes(forCellWith: IndexPath(item: i, section: 0))
+            attributes.frame = frameForIndex(i)
+            attributes.zIndex = visibleCardCount - i
+            attributes.transform3D = CATransform3DMakeTranslation(0, 0, CGFloat(visibleCardCount - i))
+            attributes.backgroundColor = backgroundColorForIndex(i)
+            layoutAttributes.append(attributes)
+        }
     }
     
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         
-        var layoutAttributes = [CardCollectionViewLayoutAttributes]()
-        
-        let visibleIndexPaths = visibleIndexPathsInRect(rect)
-        for indexPath in visibleIndexPaths {
-            if let attributes = layoutAttributesForItem(at: indexPath) {
-                layoutAttributes.append(attributes)
-            }
-        }
-        return layoutAttributes
+        return Array(layoutAttributes[0..<min(visibleCardCount, cardDataSource?.items.count ?? 0)])
     }
     
     override func layoutAttributesForItem(at indexPath: IndexPath) -> CardCollectionViewLayoutAttributes? {
-        let attributes = CardCollectionViewLayoutAttributes(forCellWith: indexPath)
+        let attributes = layoutAttributes[indexPath.item]
         attributes.frame = frameForIndex(indexPath.item)
-        attributes.backgroundColor = backgroundColorForIndex(indexPath.item)
         attributes.zIndex = visibleCardCount - indexPath.item
+        attributes.transform3D = CATransform3DMakeTranslation(0, 0, CGFloat(visibleCardCount - indexPath.item))
+        attributes.backgroundColor = backgroundColorForIndex(indexPath.item)
+        layoutAttributes.append(attributes)
         return attributes
     }
     
+    override func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        return layoutAttributesForItem(at:itemIndexPath)
+    }
+    
     override func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let attributes = CardCollectionViewLayoutAttributes(forCellWith: itemIndexPath)
         
-        attributes.frame = frameForIndex(itemIndexPath.item)
-        attributes.frame = CGRect(x: attributes.frame.origin.x, y: Tools.screenHeight, width: attributes.frame.width, height: attributes.frame.height)
+//        let idxPath = iOSBugFixIndexPath(itemIndexPath)
+        
+        let attributes = layoutAttributesForItem(at: itemIndexPath)
+        
+        if (itemIndexPath.item == 0 && attributes != nil)
+        {
+            let att = attributes!.copy() as! CardCollectionViewLayoutAttributes
+            att.frame = CGRect(x: att.frame.origin.x, y: Tools.screenHeight, width: att.frame.width, height: att.frame.height)
+            return att
+        }
+        
         return attributes
     }
     
     fileprivate
     var visibleCardCount: Int!
+    lazy var layoutAttributes = [CardCollectionViewLayoutAttributes]()
     
     func visibleIndexPathsInRect(_ rect: CGRect) -> [IndexPath] {
         var indexPaths = [IndexPath]()
@@ -98,6 +118,36 @@ class CardCollectionViewLayout: UICollectionViewLayout {
             return UIColor(red: 216.0/255.0, green: 216.0/255.0, blue: 216.0/255.0, alpha: 0.6)
         }
     }
+    
+//    func iOSBugFixIndexPath(_ indexPath: IndexPath) -> IndexPath {
+//        guard let itemCount = cardDataSource?.items.count else {
+//            return indexPath
+//        }
+//
+//        if (itemCount == 2)
+//        {
+//            if (indexPath.item == 1)
+//            {
+//                return IndexPath(item: 2, section: indexPath.section)
+//            }
+//            else if (indexPath.item == 2)
+//            {
+//                return IndexPath(item: 1, section: indexPath.section)
+//            }
+//        }
+//        else if (itemCount == 1)
+//        {
+//            if (indexPath.item == 0)
+//            {
+//                return IndexPath(item: 1, section: indexPath.section)
+//            }
+//            else
+//            {
+//                return IndexPath(item: 0, section: indexPath.section)
+//            }
+//        }
+//        return indexPath
+//    }
     
     var cardDataSource: CardDataSource? {
         get {

@@ -215,7 +215,10 @@ extension MainViewController: CardDataSourceDelegate {
         
         // check if game ended
         if (dataSource.items.count == 0) {
-            gameEnded()
+            unowned let uself = self
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2, execute: {
+                uself.gameEnded()
+            })
         }
     }
     
